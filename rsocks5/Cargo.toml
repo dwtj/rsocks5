@@ -1,0 +1,8 @@
+[package]
+name = "rsocks5"
+version = "0.1.0"
+authors = ["David Johnston <dwtj@iastate.edu>",
+           "Nik Kinkel <nskinkel@iastate.edu>"]
+
+[dependencies]
+mio = "0.4"
