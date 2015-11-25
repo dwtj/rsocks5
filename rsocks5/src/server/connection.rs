@@ -15,22 +15,84 @@
 
 #![allow(dead_code)]
 
+use std::io::{Result};
+
+use mio::{EventLoop, EventSet, PollOpt, Token};
+use mio::{TryRead};
+use mio::tcp::TcpStream;
+
+use server::SocksServer;
+
 /// This is currently set to the size needed to hold a full read request with `AddressType::IPv6`.
 /// The buffer may need to grow in certain cases (e.g. with a long `AddressType::DOMAINNAME`).
 const INITIAL_BUF_SIZE: usize = 22;
 
 
 pub struct Connection {
+    id: Token,
     buf: Vec<u8>,
     state: State,
+    socket: TcpStream,
 }
 
 impl Connection {
-    pub fn new() -> Connection {
+    pub fn new(id: Token, socket: TcpStream) -> Connection {
         Connection {
-            buf:   Vec::with_capacity(INITIAL_BUF_SIZE),
-            state: State::ReadingMethods,
+            id:     id,
+            buf:    Vec::with_capacity(INITIAL_BUF_SIZE),
+            state:  State::ReadingMethods,
+            socket: socket,
         }
+    }
+
+    pub fn ready(&mut self, event_loop: &mut EventLoop<SocksServer>, events: EventSet) {
+        self.try_transition(&events);
+        if self.state != State::Closed {
+            self.reregister(event_loop);
+        }
+    }
+
+    /// Tries to read from `socket` into `buf`.
+    ///
+    /// According to the mio "Getting Started" tutorial: "The only time a read can succeed with 0
+    /// bytes read is if the socket is closed or the other end shutdown half the socket using
+    /// `shutdown()`."
+    pub fn try_read(&mut self) -> Result<Option<usize>> {
+        self.socket.try_read_buf(&mut self.buf)
+    }
+
+    fn reregister(&self, event_loop: &mut EventLoop<SocksServer>) {
+        let event_set = match self.state {
+            State::ReadingMethods    => EventSet::readable(),
+            State::WritingMethod     => EventSet::writable(),
+            State::NegotiatingMethod => unimplemented!(),      // TODO: Everything!
+            State::ReadingRequest    => EventSet::readable(),
+            State::WritingReplies    => EventSet::writable(),
+            State::Closed => panic!("cannot re-register closed connection"),
+        };
+
+        event_loop.reregister(&self.socket, self.id, event_set, PollOpt::oneshot()).unwrap();
+    }
+
+    // Depending on the connection's current status (in particular, `self.buf` and `self.state`),
+    // try to handle the current stage of the connection and transition to the next state.
+    fn try_transition(&mut self, events: &EventSet) {
+        // TODO: Everything!
+        match self.state {
+            State::ReadingMethods => self.try_transition_from_reading_methods(events),
+            _ => unimplemented!(),
+        };
+    }
+
+    fn try_transition_from_reading_methods(&mut self, events: &EventSet) {
+        // TODO: Everything!
+        assert!(self.state == State::ReadingMethods);
+        if events.is_readable() {
+            match self.try_read() {
+                _ => unimplemented!(),
+            }
+        }
+        unimplemented!();
     }
 }
 
