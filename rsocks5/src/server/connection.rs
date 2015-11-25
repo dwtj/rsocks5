@@ -52,15 +52,6 @@ impl Connection {
         }
     }
 
-    /// Tries to read from `socket` into `buf`.
-    ///
-    /// According to the mio "Getting Started" tutorial: "The only time a read can succeed with 0
-    /// bytes read is if the socket is closed or the other end shutdown half the socket using
-    /// `shutdown()`."
-    pub fn try_read(&mut self) -> Result<Option<usize>> {
-        self.socket.try_read_buf(&mut self.buf)
-    }
-
     fn reregister(&self, event_loop: &mut EventLoop<SocksServer>) {
         let event_set = match self.state {
             State::ReadingMethods    => EventSet::readable(),
@@ -72,6 +63,15 @@ impl Connection {
         };
 
         event_loop.reregister(&self.socket, self.id, event_set, PollOpt::oneshot()).unwrap();
+    }
+
+    /// Tries to read from `socket` into `buf`.
+    ///
+    /// According to the mio "Getting Started" tutorial: "The only time a read can succeed with 0
+    /// bytes read is if the socket is closed or the other end shutdown half the socket using
+    /// `shutdown()`."
+    fn try_read(&mut self) -> Result<Option<usize>> {
+        self.socket.try_read_buf(&mut self.buf)
     }
 
     // Depending on the connection's current status (in particular, `self.buf` and `self.state`),
