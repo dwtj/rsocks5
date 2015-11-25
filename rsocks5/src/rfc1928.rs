@@ -30,7 +30,7 @@ impl SocksVersion {
 }
 
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum AuthMethod {
     NONE = 0x00,
     GSSAPI = 0x01,
@@ -58,6 +58,7 @@ impl AuthMethod {
 }
 
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Reply {
     NOERR       = 0x00,
     FAIL        = 0x01,
@@ -103,6 +104,7 @@ impl Reply {
 }
 
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Command {
     CONNECT = 0x01,
     BIND =    0x02,
@@ -130,6 +132,7 @@ impl Command {
 }
 
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum AddressType {
     IPv4,
     DOMAINNAME(Option<u8>),  // May optionally hold information about the domain name's length.

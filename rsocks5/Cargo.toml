@@ -6,3 +6,4 @@ authors = ["David Johnston <dwtj@iastate.edu>",
 
 [dependencies]
 mio = "0.4"
+log = "0.3.3"
